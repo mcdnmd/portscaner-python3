@@ -45,8 +45,11 @@ class Router:
     def print_result(self, success, ping, target, proto):
 
         if success:
-            protocol = self.define_protocol(proto)
-            print(f'{target[0].upper()} {target[1]} {ping:.4f}ms {protocol}')
+            if self.guess:
+                protocol = self.define_protocol(proto)
+                print(f'{target[0].upper()} {target[1]} {ping:.4f}ms {protocol}')
+            else:
+                print(f'{target[0].upper()} {target[1]} {ping:.4f}ms')
         else:
             print(f'{target[0].upper()} {target[1]} is closed')
 
