@@ -15,7 +15,7 @@ class SocketManager:
             return self.scan_udp_port(addr, port)
 
     def scan_tcp_port(self, addr, port):
-        packet = IP(dst=addr)/TCP(dport=port, flags='S', seq=1344)
+        packet = IP(dst=addr)/TCP(dport=port, flags='S')
         return packet, sr(packet, timeout=self.timeout, verbose=False)
 
     def scan_udp_port(self, addr, port):
