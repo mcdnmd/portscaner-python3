@@ -67,9 +67,10 @@ class Router:
 
     @staticmethod
     def define_protocol(proto):
+        print(proto)
         if proto == 6:
             return 'TCP'
         elif proto == 17:
             return 'UDP'
-        elif proto == '1':
+        elif proto == 1:
             return 'DNS'
