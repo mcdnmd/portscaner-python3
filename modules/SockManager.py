@@ -1,5 +1,6 @@
 from scapy.all import *
-from scapy.layers.inet import IP, TCP, UDP
+from scapy.layers.dns import DNS, DNSQR
+from scapy.layers.inet import IP, TCP, UDP, ICMP
 
 
 class SocketManager:
@@ -16,8 +17,12 @@ class SocketManager:
 
     def scan_tcp_port(self, addr, port):
         packet = IP(dst=addr)/TCP(dport=port, flags='S')
-        return packet, sr(packet, timeout=self.timeout, verbose=False)
+        return sr(packet, timeout=self.timeout, verbose=False)
 
     def scan_udp_port(self, addr, port):
         packet = IP(dst=addr)/UDP(dport=port)
-        return packet, sr(packet, timeout=self.timeout, verbose=False)
+        return sr(packet, timeout=self.timeout, verbose=False)
+
+    def send_rst_request(self, addr, port):
+        packet = IP(dst=addr)/TCP(dport=port, flags='R')
+        return sr(packet, timeout=self.timeout, verbose=False)

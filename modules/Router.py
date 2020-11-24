@@ -2,6 +2,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 from scapy.all import *
+from scapy.layers.inet import UDP, TCP, ICMP
 
 from modules.SockManager import SocketManager
 
@@ -35,41 +36,34 @@ class Router:
         for executor in futures:
             target = futures[executor]
             try:
-                success, ping, proto = executor.result()
+                success, ping = executor.result()
             except Exception as e:
                 print(f'Problem occurred: {e}')
                 raise
             else:
-                self.print_result(success, ping, target, proto)
+                self.print_result(success, ping, target)
 
-    def print_result(self, success, ping, target, proto):
+    def print_result(self, success, ping, target):
 
         if success:
-            if self.guess:
-                protocol = self.define_protocol(proto)
-                print(f'{target[0].upper()} {target[1]} {ping:.4f}ms {protocol}')
-            else:
-                print(f'{target[0].upper()} {target[1]} {ping:.4f}ms')
+            print(f'{target[0].upper()} {target[1]} {ping:.4f}ms')
         else:
             print(f'{target[0].upper()} {target[1]} is closed')
 
     def work(self, addr, target):
         start_time = time.time()
-        sent_packet, data = self.SocketManager.setup_connection(addr, target)
+        data = self.SocketManager.setup_connection(addr, target)
         ans = data[0]
         ping = time.time() - start_time
         if len(ans) != 0:
             r, s = ans[0]
+            if s.haslayer(TCP):
+                if str(s.getlayer(TCP).flags).find('R') == -1:
+                    self.SocketManager.send_rst_request(addr, int(target[1]))
+                    return True, ping
+            else:
+                if s.haslayer(UDP):
+                    return True, ping
+        return False, ping
 
-            if str(s[1].flags).find('R') == -1:
-                return True, ping, s.proto
-        return False, ping, 0
 
-    @staticmethod
-    def define_protocol(proto):
-        if proto == 6:
-            return 'TCP'
-        elif proto == 17:
-            return 'UDP'
-        elif proto == 1:
-            return 'DNS'
